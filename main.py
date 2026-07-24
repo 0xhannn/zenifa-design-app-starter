@@ -647,6 +647,8 @@ def _local_version_payload(can_deploy: bool = True) -> dict:
         'releasesUrl': 'https://github.com/0xhannn/workflow-planner-app',
         'updateHint': 'Copy command, stop app, paste in terminal, then start.bat',
         'updateCommand': _local_update_command(),
+        'updateCommandWin': 'update.bat',
+        'updateCommandPosix': ('git remote set-url origin https://github.com/0xhannn/workflow-planner-app.git && ' 'git fetch origin --tags --prune && ' 'git checkout -B main origin/main && ' 'pip install -r requirements.txt'),
         'updateStyle': 'copy-stop',
         'currentSha': (cur_sha or '')[:12],
         'latestSha': (rem_sha or '')[:12],

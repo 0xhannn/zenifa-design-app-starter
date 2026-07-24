@@ -77,10 +77,13 @@
     ensureStyles();
     var latest = d.latestVersion || '';
     var current = d.currentVersion || d.version || '';
+    var isWin = /Win/i.test(navigator.platform || '') || /Windows/i.test(navigator.userAgent || '');
     var cmd =
+      (isWin && (d.updateCommandWin || d.updateCommand)) ||
       d.updateCommand ||
       d.updateCmd ||
-      'git fetch origin --tags --prune && git checkout -B main origin/main && pip install -r requirements.txt';
+      d.updateCommandPosix ||
+      (isWin ? 'update.bat' : 'git fetch origin --tags --prune && git checkout -B main origin/main && pip install -r requirements.txt');
     var el = document.getElementById(BANNER_ID);
     if (!el) {
       el = document.createElement('div');
@@ -99,7 +102,7 @@
       '<div class="kub-cmd" data-cmd>' +
       esc(cmd) +
       '</div>' +
-      '<div class="kub-steps">1) Copy command &amp; stop app · 2) Paste di PowerShell/CMD di folder app · 3) start.bat</div>' +
+      '<div class="kub-steps">1) Copy command &amp; stop app · 2) Paste di CMD/PowerShell folder app (biasanya update.bat) · 3) start.bat</div>' +
       '<div class="kub-actions">' +
       '<button type="button" class="kub-btn" data-act="copy-stop">Copy command &amp; stop app</button>' +
       '<button type="button" class="kub-btn secondary" data-act="copy-only">Copy only</button>' +
