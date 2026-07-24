@@ -7,6 +7,14 @@ Empty **local** install of Workflow Planner (design pipeline, tasks, product gal
 - Uploads stay on your machine under `uploads/`
 - Default brand: **Workflow Planner** (rename/logo in-app as admin)
 
+## Changelog
+
+### v1.0.1
+- Custom Workflow Planner favicon / PWA icons
+- Admin PIN session fix (stable secret, single middleware)
+- One-click update: sync GitHub main + pip (keeps `.env` + `data/`)
+- Install: `install.bat` → `start.bat` → `update.bat`
+
 ## Install (Windows)
 
 1. Install [Python 3.11+](https://www.python.org/downloads/) — tick **Add Python to PATH**
