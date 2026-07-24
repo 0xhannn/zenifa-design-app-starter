@@ -9,6 +9,11 @@ Empty **local** install of Workflow Planner (design pipeline, tasks, product gal
 
 ## Changelog
 
+### v1.0.3
+- **Update flow like 9router**: banner shows command → **Copy command & stop app** → paste in terminal → `start.bat`
+- Avoids Windows file-lock when updating while Python is running
+
+
 ### v1.0.2
 - One-click update **restarts** the app so version/footer refresh (no stuck SHA)
 - Footer/API version re-reads git live

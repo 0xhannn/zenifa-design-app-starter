@@ -66,3 +66,16 @@ None of these are committed to Git.
 
 ## Brand
 Admin → pencil on header → name/logo.
+
+## Update (recommended — same idea as 9router)
+
+When the green banner appears:
+
+1. Click **Copy command & stop app**
+2. App process exits
+3. Paste in PowerShell/CMD **in the app folder** (usually `update.bat`)
+4. Wait for **UPDATE OK**
+5. Double-click **start.bat** → Ctrl+F5
+
+Or skip the banner: double-click `update.bat` anytime.
+

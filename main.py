@@ -606,6 +606,19 @@ def _local_current_head() -> str:
         return ''
 
 
+
+def _local_update_command() -> str:
+    """Command user pastes after stopping the app (9router-style)."""
+    if os.name == 'nt':
+        return 'update.bat'
+    return (
+        'git remote set-url origin https://github.com/0xhannn/workflow-planner-app.git && '
+        'git fetch origin --tags --prune && '
+        'git checkout -B main origin/main && '
+        'pip install -r requirements.txt'
+    )
+
+
 def _local_version_payload(can_deploy: bool = True) -> dict:
     cur = _local_git_version()
     cur_sha = _local_current_head()
@@ -632,7 +645,9 @@ def _local_version_payload(can_deploy: bool = True) -> dict:
         'isLocal': True,
         'channel': 'local',
         'releasesUrl': 'https://github.com/0xhannn/workflow-planner-app',
-        'updateHint': 'One-click: sync GitHub + pip (keeps .env + data/)',
+        'updateHint': 'Copy command, stop app, paste in terminal, then start.bat',
+        'updateCommand': _local_update_command(),
+        'updateStyle': 'copy-stop',
         'currentSha': (cur_sha or '')[:12],
         'latestSha': (rem_sha or '')[:12],
     }
@@ -2966,6 +2981,34 @@ async def welcome(request: Request):
     return templates.TemplateResponse(
         request=request, name="index.html", context=_welcome_context(request)
     )
+
+
+
+
+@app.post("/admin/stop-local", include_in_schema=False)
+async def admin_stop_local(request: Request):
+    """LOCAL only: exit python so user can paste update command (9router-style)."""
+    if not _is_local_starter():
+        return JSONResponse({"status": "error", "error": "stop-local only on laptop starter"}, status_code=403)
+    try:
+        await request.json()
+    except Exception:
+        pass
+    import threading
+    def _die():
+        import time
+        time.sleep(0.4)
+        try:
+            os._exit(0)
+        except Exception:
+            raise SystemExit(0)
+    threading.Thread(target=_die, daemon=True).start()
+    return JSONResponse({
+        "status": "ok",
+        "message": "Stopping. Paste update command in terminal, then start.bat",
+        "updateCommand": _local_update_command(),
+        "channel": "local",
+    })
 
 
 if __name__ == "__main__":
