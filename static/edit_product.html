@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Link Product — {{ app_version }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-900 min-h-screen text-white">
+
+<div class="max-w-xl mx-auto px-4 py-8">
+    <h1 class="text-2xl font-bold mb-1">Link to Product</h1>
+    <p class="text-gray-400 text-sm mb-6">Task: <strong class="text-white">{{ task.title }}</strong></p>
+
+    <form method="post" action="/task/{{ task.id }}/edit-product">
+        <label class="block text-sm font-bold text-gray-300 mb-2">Select Product</label>
+        <select name="product_id" class="w-full bg-gray-800 border border-gray-600 rounded-lg px-4 py-3 text-white mb-6 focus:border-purple-500 focus:outline-none">
+            <option value="1">Unlink (No Product)</option>
+            {% for p in products %}
+            <option value="{{ p.id }}" {% if task.product_id == p.id %}selected{% endif %}>
+                {{ p.model_name or p.name }}
+            </option>
+            {% endfor %}
+        </select>
+        <div class="flex gap-3">
+            <button type="submit" class="flex-1 bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 rounded-lg transition">
+                <i class="fas fa-save mr-2"></i>Save
+            </button>
+            <a href="/task/{{ task.id }}" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 rounded-lg text-center transition">
+                <i class="fas fa-arrow-left mr-2"></i>Cancel
+            </a>
+        </div>
+    </form>
+</div>
+
+</body>
+</html>

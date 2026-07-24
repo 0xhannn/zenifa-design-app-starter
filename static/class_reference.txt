@@ -1,0 +1,20 @@
+<body class="bg-gray-900 text-white font-sans min-h-screen" data-page="{{ menu }}">
+    <nav class="hidden sm:block bg-gray-800 border-b border-gray-700 sticky top-0 z-40">
+        <div class="container mx-auto px-4 py-2">
+            <div class="flex items-center justify-between h-16">
+            <div class="flex items-center gap-2">
+                    <img src="/static/img/workflow-logo-64.png" alt="Workflow Planner" class="w-10 h-10">
+                    <span class="text-xl font-bold tracking-tight text-white">Workflow Planner</span>
+                <div class="flex items-center gap-6">
+                    <a href="/welcome" class="hover:text-white transition items-center {{ 'text-white font-bold' if menu == 'welcome' else 'text-gray-300' }}">
+                        <i class="fas fa-house mr-1"></i> Home
+                    <a href="/inwork" class="hover:text-white transition items-center {{ 'text-white font-bold' if menu == 'inwork' else 'text-gray-300' }}">
+                        <i class="fas fa-images mr-1"></i> In Work
+                    <a href="/finished" class="hover:text-white transition items-center {{ 'text-white font-bold' if menu == 'finished' else 'text-gray-300' }}">
+                        <i class="fas fa-check-circle mr-1"></i> Finished
+                    <a href="/tasks" class="hover:text-white transition items-center {{ 'text-white font-bold' if menu == 'tasks' else 'text-gray-300' }}">
+                        <i class="fas fa-list-check mr-1"></i> Tasks
+                    <a href="/pdf" class="hover:text-white transition items-center {{ 'text-white font-bold' if menu in ['pdf','pdf_drafts'] else 'text-gray-300' }}">
+                        <i class="fas fa-file-pdf mr-1"></i> Gallery
+                    <form method="post" action="/pin/logout" title="Logout admin" class="flex flex-col items-center gap-0">
+                        <button type="submit" class="zen-switch is-on" aria-label="Admin mode active, click to logout">
