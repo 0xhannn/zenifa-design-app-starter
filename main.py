@@ -436,6 +436,18 @@ def _git_version():
 APP_VERSION = _git_version()
 
 
+def live_app_version() -> str:
+    """Always re-read git (footer/API). Module-level APP_VERSION freezes until process restart."""
+    try:
+        # Prefer local git describe when helpers exist (defined later in file).
+        if '_local_git_version' in globals() and callable(globals().get('_local_git_version')):
+            return _local_git_version()
+        return _git_version()
+    except Exception:
+        return APP_VERSION
+
+
+
 def _welcome_context(request: Request) -> dict:
     """Shared landing data for / and /welcome."""
     conn = get_db()
@@ -492,7 +504,7 @@ async def root(request: Request):
 
 @app.get("/__health__", include_in_schema=False)
 def __health__():
-    return {"status": "ok", "version": APP_VERSION, "ts": datetime.utcnow().isoformat() + "Z"}
+    return {"status": "ok", "version": live_app_version(), "ts": datetime.utcnow().isoformat() + "Z"}
 
 # ── VERSION & DEPLOY (prod deploy.js OR local starter git pull) ──
 # LOCAL/STARTER (Windows/laptop) → one-click git pull + pip (9router-style)
@@ -739,11 +751,30 @@ async def admin_deploy(request: Request):
                     'version': _local_git_version(),
                 }, status_code=500)
 
+            ver = _local_git_version()
+            sha = _local_current_head()
+            # Signal start.bat loop to relaunch after this process exits.
+            try:
+                (_app_root() / '.restart').write_text(ver + '\n', encoding='utf-8')
+            except Exception:
+                pass
+            # Schedule clean exit so Windows can unlock files & start.bat restarts python.
+            import threading
+            def _exit_soon():
+                import time
+                time.sleep(1.2)
+                try:
+                    os._exit(0)
+                except Exception:
+                    raise SystemExit(0)
+            threading.Thread(target=_exit_soon, daemon=True).start()
             return JSONResponse({
                 'status': 'ok',
-                'message': 'Updated. Reload the page.',
+                'message': 'Updated to ' + ver + '. App restarting…',
                 'stdout': '\n'.join(logs)[-2000:],
-                'version': _local_git_version(),
+                'version': ver,
+                'currentSha': (sha or '')[:12],
+                'restartRequired': True,
                 'channel': 'local',
             })
         except Exception as e:
@@ -992,19 +1023,30 @@ _orig_template_response = templates.TemplateResponse
 
 
 def _template_response_with_brand(*args, **kwargs):
+    brand = _brand_ctx()
+    try:
+        live_ver = live_app_version()
+    except Exception:
+        live_ver = APP_VERSION
+
+    def _merge(ctx):
+        if not isinstance(ctx, dict):
+            return ctx
+        merged = dict(ctx)
+        for k, v in brand.items():
+            merged.setdefault(k, v)
+        merged['app_version'] = live_ver
+        return merged
+
     ctx = kwargs.get('context')
     if ctx is None and len(args) >= 3 and isinstance(args[2], dict):
         # legacy positional context
         args = list(args)
-        merged = dict(args[2])
-        for k, v in _brand_ctx().items():
-            merged.setdefault(k, v)
-        args[2] = merged
+        args[2] = _merge(args[2])
         return _orig_template_response(*args, **kwargs)
-    context = dict(ctx or {})
-    for k, v in _brand_ctx().items():
-        context.setdefault(k, v)
-    kwargs['context'] = context
+    if isinstance(ctx, dict):
+        kwargs = dict(kwargs)
+        kwargs['context'] = _merge(ctx)
     return _orig_template_response(*args, **kwargs)
 
 

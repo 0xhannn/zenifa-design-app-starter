@@ -59,6 +59,7 @@
       '<div class="kub-label">' +
       '<div class="kub-title">Update tersedia</div>' +
       '<div class="kub-sub">Sekarang ' + esc(current) + (latest ? ' → ' + esc(latest) : '') +
+      (d.currentSha && d.latestSha ? (' · ' + esc(d.currentSha) + '→' + esc(d.latestSha)) : '') +
       ' · data + .env aman · satu klik</div>' +
       '</div>' +
       '<div class="kub-actions">' +
@@ -132,8 +133,50 @@
           btn.textContent = 'Retry';
           return;
         }
-        if (msgEl) msgEl.textContent = 'OK ' + (res.body && res.body.version ? res.body.version : '') + ' — reload…';
-        setTimeout(function () { location.reload(); }, 1200);
+        var ver = (res.body && res.body.version) ? res.body.version : '';
+        var needRestart = res.body && (res.body.restartRequired === true || res.body.restartRequired === 1);
+        if (msgEl) {
+          msgEl.textContent = needRestart
+            ? ('OK ' + ver + ' — app restarting, tunggu…')
+            : ('OK ' + ver + ' — reload…');
+        }
+        // After update, process exits + start.bat relaunches. Poll until version changes or timeout.
+        var tries = 0;
+        var prev = ver;
+        function waitUp() {
+          tries += 1;
+          fetch('/api/version', { cache: 'no-store', credentials: 'include' })
+            .then(function (r) { return r.json(); })
+            .then(function (d) {
+              var now = d.version || d.currentVersion || '';
+              var has = d.hasUpdate === true;
+              if ((now && prev && now !== prev && !String(now).startsWith('03ccc')) || (now && !has && tries > 1)) {
+                if (msgEl) msgEl.textContent = 'Siap ' + now + ' — reload';
+                location.reload();
+                return;
+              }
+              if (tries >= 40) {
+                if (msgEl) msgEl.textContent = 'Timeout tunggu restart. Tutup + start.bat lagi, atau Ctrl+F5.';
+                btn.disabled = false;
+                btn.textContent = 'Reload';
+                btn.onclick = function () { location.reload(); };
+                return;
+              }
+              setTimeout(waitUp, 1500);
+            })
+            .catch(function () {
+              // server down during restart — keep waiting
+              if (tries >= 40) {
+                if (msgEl) msgEl.textContent = 'App belum up. Jalankan start.bat lagi.';
+                btn.disabled = false;
+                btn.textContent = 'Reload';
+                btn.onclick = function () { location.reload(); };
+                return;
+              }
+              setTimeout(waitUp, 1500);
+            });
+        }
+        setTimeout(waitUp, needRestart ? 2000 : 800);
       })
       .catch(function (e) {
         if (msgEl) msgEl.textContent = 'Network/error: ' + (e && e.message ? e.message : e);

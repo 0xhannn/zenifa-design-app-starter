@@ -9,6 +9,12 @@ Empty **local** install of Workflow Planner (design pipeline, tasks, product gal
 
 ## Changelog
 
+### v1.0.2
+- One-click update **restarts** the app so version/footer refresh (no stuck SHA)
+- Footer/API version re-reads git live
+- `start.bat` auto-relaunches after update
+
+
 ### v1.0.1
 - Custom Workflow Planner favicon / PWA icons
 - Admin PIN session fix (stable secret, single middleware)

@@ -18,3 +18,4 @@ static/index.html.backup*
 static/index.html.v*
 .session_secret
 data/*.db
+.restart
